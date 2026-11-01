@@ -13,7 +13,14 @@ This page covers disks, Proxmox storage pools, backup destinations, and restore 
 | `sda` | SATA SSD | 256 GB | Previous Proxmox install (contents unreviewed) | Not used by the current install; volumes are still active |
 | External drive | HDD, USB | 1 TB (about 85 GB used) | Personal files only | Disconnected until a plan exists |
 
-SMART health: [not checked yet]. Check both internal disks before trusting either with backups (`smartctl -H`, leave serial numbers out of this repo).
+SMART health (checked 2026-11-01, `smartctl`; keep serial numbers out of this repo):
+
+| Disk | Overall | Notes |
+| ------ | --------- | ------- |
+| `nvme0n1` | PASSED | No critical warning, 0 media errors, 100% spare, 29% of rated life used, about 30,700 power-on hours, 47 C |
+| `sda` | PASSED | 2 reallocated sectors (small, but not zero), about 480 power-on hours reported, 21 C |
+
+The NVMe is about a third of the way through its rated life, so it is fine for now but not unlimited. Re-check `sda`'s reallocated sector count monthly. If it rises, treat the disk as failing and do not use it as the only copy of anything.
 
 ## Proxmox storage
 
@@ -132,7 +139,7 @@ A backup that has never been restored is untested. Do this after the first backu
 ## Open questions
 
 - What is on the old install on `sda`, and can the disk be wiped?
-- Are both internal disks healthy? (SMART not checked.)
+- Does `sda`'s reallocated sector count (2 on 2026-11-01) stay stable?
 - What is the long-term role of the 1 TB external drive (personal files only, or also a backup copy)?
 - What schedule and retention fit the free space on the backup target?
 

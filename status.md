@@ -29,6 +29,7 @@
 - [x] v0.1 README drafted and updated with current topology and guests
 - [x] README placeholders filled in (hardware, Nexus 3.97.0-13, Ubuntu 26.04.1 LTS guests, Proxmox 9.1.1)
 - [x] 2FA enabled on Proxmox (TOTP plus recovery keys), 2026-11-01
+- [x] T1: SMART check on both internal disks, both PASSED, 2026-11-01 (SATA SSD has 2 reallocated sectors, re-check monthly)
 - [x] Drafted `docs/storage.md` (disks, pools, backup options, restore-test checklist), 2026-11-01
 - [x] Deleted unused VMs 1001, 1002, 1003, 1005; kept 1004 nexuslab (2026-11-01)
 - [x] Port forwarding rules for game server and Teamspeak removed (2026-11-01)
@@ -36,9 +37,9 @@
 
 ## In Progress
 
-- [ ] Confirm Proxmox web UI and SSH are not reachable from outside the network
-- [ ] Review the old install on the SATA SSD before reusing it
-- [ ] Explore backup options for Proxmox and the VMs using only the external drive or the HP internal disk
+- [ ] T2: Review the old install on the SATA SSD, then decide keep, copy or wipe
+- [ ] T3: Set up a scheduled backup of `1004 nexuslab` to a separate disk, then run a restore test (needs T1 and T2)
+- [ ] T4: Confirm Proxmox web UI and SSH are not reachable from outside Tailscale
 
 ## Next
 
@@ -76,3 +77,4 @@
 - 2026-11-01: Disk layout confirmed from `lvs`/`lsblk`/`storage.cfg`: VMs live on internal SSDs, not the external drive (corrected README and status). Found an old Proxmox install on the SATA SSD. Next: decide what to keep from it, confirm real VMIDs, then pick a backup target.
 - 2026-11-01: Deleted VMs 1001 teamspeak, 1002 TS3, 1003 ubuntu26.04 and 1005 palworld after a manual backup of 1004. Guest docs now list only 1004 nexuslab. Next: decide what to keep on the old SATA install, then set up a scheduled backup of 1004 to a separate disk.
 - 2026-11-01: Wrote `docs/storage.md` and linked it from the README. It holds the disk layout, thin pool overcommit warning, a read-only review procedure for the old SATA install, and a proposed (undecided) backup plan. Next: review the old SATA install, check SMART on both disks, then pick a backup target.
+- 2026-11-01: T1 done. Both internal disks pass SMART. NVMe at 29% of rated life; SATA SSD shows 2 reallocated sectors, so recheck monthly and do not rely on it alone. Tasks T1 to T4 now tracked under In Progress. Next: T2, review the old SATA install.
