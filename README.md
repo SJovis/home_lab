@@ -32,7 +32,7 @@ Wi-Fi clients: smartphone, smart TV
 | Device | Role | Notes |
 | -------- | ------ | ------- |
 | ISP router | Gateway, Wi-Fi | Provided by ISP |
-| HP EliteDesk | Proxmox VE host | [CPU / RAM / storage to fill in] |
+| HP EliteDesk | Proxmox VE host | Intel Core i5-6500T (4 cores), 15.5 GiB RAM, ~68 GiB root volume; external 1 TB hard drive for storage |
 | Gaming / work PC | Workstation | Not part of the lab |
 | Switch | Wired LAN | Unmanaged, 2nd floor |
 
@@ -40,9 +40,9 @@ Wi-Fi clients: smartphone, smart TV
 
 | Component | Version |
 | ----------- | --------- |
-| Proxmox VE | 8.x |
-| Sonatype Nexus | [version] |
-| Guest OS | [e.g. Ubuntu Server 22.04] |
+| Proxmox VE | 9.1.1 |
+| Sonatype Nexus | 3.97.0-13 |
+| Guest OS | Ubuntu 26.04.1 LTS (all guests) |
 
 ## Guest Inventory
 
@@ -61,6 +61,8 @@ Wi-Fi clients: smartphone, smart TV
 ## Security Notes
 
 - Proxmox web UI and SSH are not exposed to the internet
+- Remote access to the host is through Tailscale, not port forwarding
+- No port forwarding rules are active (the game server and Teamspeak rules were removed on 2026-11-01)
 - Public IP, credentials, and host-specific secrets are excluded from this repo
 
 ## Changelog

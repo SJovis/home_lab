@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Documentation for a personal homelab: a single Proxmox VE 8.x host (HP EliteDesk, hostname `pve01`) running game server, Teamspeak, and Sonatype Nexus VMs on a flat home network. It also serves as a DevOps bootcamp practice log. There is no application code, build, lint, or test tooling yet; the work is writing and maintaining Markdown docs and sanitized config files.
+Documentation for a personal homelab: a single Proxmox VE 9.x host (HP EliteDesk, hostname `pve01`) running game server, Teamspeak, and Sonatype Nexus VMs on a flat home network. It also serves as a DevOps bootcamp practice log. There is no application code, build, lint, or test tooling yet; the work is writing and maintaining Markdown docs and sanitized config files.
 
 ## Key files and how they relate
 
