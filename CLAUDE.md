@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Documentation for a personal homelab: a single Proxmox VE 9.x host (HP EliteDesk, hostname `pve01`) running game server, Teamspeak, and Sonatype Nexus VMs on a flat home network. It also serves as a DevOps bootcamp practice log. There is no application code, build, lint, or test tooling yet; the work is writing and maintaining Markdown docs and sanitized config files.
+Documentation for a personal homelab: a single Proxmox VE 9.x host (HP EliteDesk, hostname `pve01`) currently running a Sonatype Nexus VM on a flat home network (the game server and Teamspeak VMs were deleted on 2026-11-01). It also serves as a DevOps bootcamp practice log. There is no application code, build, lint, or test tooling yet; the work is writing and maintaining Markdown docs and sanitized config files.
 
 ## Key files and how they relate
 
@@ -21,7 +21,7 @@ Facts are duplicated across `README.md` and `status.md` (guest inventory, networ
 - The repo is public. Never commit real public IPs, credentials, hostnames beyond what's already documented, or host-specific secrets. Network addresses such as `192.168.1.0/24` are explicit placeholders. `.gitignore` already blocks env/key/pem files, `secrets/`, Terraform state/tfvars, and Proxmox backup dumps (`*.vma.zst`, etc.). Pre-commit secret scanning runs gitleaks via the tracked `.githooks/pre-commit`; after cloning, enable it with `git config core.hooksPath .githooks` (requires `gitleaks` in PATH).
 - Strip secrets and identifying details from any config before it goes into `configs/`.
 - Use absolute dates (YYYY-MM-DD) in the Decisions Log and Session Notes.
-- Guests are identified by Proxmox VMID plus name (e.g. `100 nexus`); keep that format in the inventory tables.
+- Guests are identified by Proxmox VMID plus name (e.g. `1004 nexuslab`); keep that format in the inventory tables.
 - Versioning: v0.1 is the flat-network baseline; VLAN segmentation (management, guest, IoT) is planned for v0.2.
 - Flag any change that affects exposure (port forwarding, remote access, firewall rules). State the risk and recommend WireGuard over port forwarding.
 - Never invent specs, versions, or addresses. If a value is unknown, leave the placeholder and ask the user.

@@ -6,7 +6,8 @@ A home infrastructure lab built on Proxmox VE, used to host game servers for fri
 
 ## Goals
 
-- Run a reliable home environment for game servers shared with friends
+- Run a reliable home environment, rebuilt from scratch with better planning
+- Game servers for friends: low priority, revisit only if a game comes up that changes the plans
 - Practice DevOps and systems administration on real infrastructure
 - Document design decisions, mistakes, and changes over time
 
@@ -19,8 +20,6 @@ Internet (fibre)
 [Switch, 2nd floor]
 ├── Gaming / work PC (192.168.1.x)
 └── HP EliteDesk (192.168.1.10) Proxmox VE host
-├── Game server VMs
-├── Teamspeak VM
 └── Sonatype Nexus VM
 
 Wi-Fi clients: smartphone, smart TV
@@ -32,7 +31,7 @@ Wi-Fi clients: smartphone, smart TV
 | Device | Role | Notes |
 | -------- | ------ | ------- |
 | ISP router | Gateway, Wi-Fi | Provided by ISP |
-| HP EliteDesk | Proxmox VE host | Intel Core i5-6500T (4 cores), 15.5 GiB RAM, ~68 GiB root volume; external 1 TB hard drive for storage |
+| HP EliteDesk | Proxmox VE host | Intel Core i5-6500T (4 cores), 15.5 GiB RAM, 2 x 256 GB SSD (NVMe + SATA); 1 TB external drive for personal files, currently disconnected |
 | Gaming / work PC | Workstation | Not part of the lab |
 | Switch | Wired LAN | Unmanaged, 2nd floor |
 
@@ -48,14 +47,16 @@ Wi-Fi clients: smartphone, smart TV
 
 | VMID | Name | Type | Purpose | Status |
 | ------ | ------ | ------ | --------- | -------- |
-| 100 | nexus | VM | Artifact repository (Nexus) | Running |
-| 101 | game-server-1 | VM | Friends' game server | Offline |
-| 102 | ts-server | VM | Teamspeak voice server | Offline |
+| 1004 | nexuslab | VM | Artifact repository (Nexus) | Running |
+
+The game server (Palworld), Teamspeak and test VMs were deleted on 2026-11-01 to start from a clean slate.
 
 ## Storage and Backups
 
-- Local storage on External Hard-Drive
-- Backups [ not yet configured ]
+- Active Proxmox install on the NVMe SSD: LVM-thin `local-lvm` (~141 GB pool) for VM disks, and `local` directory storage on the ~69 GB root volume
+- SATA SSD: holds what appears to be a previous Proxmox install (volume group renamed `pve-OLD-*`) with old VMs and templates; contents under review
+- 1 TB external drive: personal files only, not part of Proxmox storage, currently disconnected
+- Backups: no scheduled backups. One manual backup of `1004 nexuslab` was taken on 2026-11-01 to `local`, which is on the same disk as the VM
 - Last successful restore test: none yet
 
 ## Security Notes
@@ -63,7 +64,7 @@ Wi-Fi clients: smartphone, smart TV
 - Proxmox web UI and SSH are not exposed to the internet
 - Remote access to the host is through Tailscale, not port forwarding
 - Two-factor authentication is enabled on the Proxmox web UI
-- No port forwarding rules are active (the game server and Teamspeak rules were removed on 2026-11-01)
+- No port forwarding rules are active (the old game server and Teamspeak rules were removed on 2026-11-01)
 - Public IP, credentials, and host-specific secrets are excluded from this repo
 
 ## Changelog
