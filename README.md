@@ -62,6 +62,7 @@ Wi-Fi clients: smartphone, smart TV
 
 - Proxmox web UI and SSH are not exposed to the internet
 - Remote access to the host is through Tailscale, not port forwarding
+- Two-factor authentication is enabled on the Proxmox web UI
 - No port forwarding rules are active (the game server and Teamspeak rules were removed on 2026-11-01)
 - Public IP, credentials, and host-specific secrets are excluded from this repo
 
