@@ -59,6 +59,8 @@ The game server (Palworld), Teamspeak and test VMs were deleted on 2026-11-01 to
 - Backups: no scheduled backups. One manual backup of `1004 nexuslab` was taken on 2026-11-01 to `local`, which is on the same disk as the VM
 - Last successful restore test: none yet
 
+Details, the backup plan and the restore-test checklist are in [docs/storage.md](docs/storage.md).
+
 ## Security Notes
 
 - Proxmox web UI and SSH are not exposed to the internet

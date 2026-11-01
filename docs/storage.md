@@ -1,0 +1,142 @@
+# Storage and Backups
+
+**Last updated:** 2026-11-01
+**Host:** `pve01` (Proxmox VE 9.1.1, bare metal)
+
+This page covers disks, Proxmox storage pools, backup destinations, and restore testing. For the overview see [README.md](../README.md). For the working log see [status.md](../status.md).
+
+## Disks
+
+| Device | Type | Size | Role | State |
+| -------- | ------ | ------ | ------ | ------- |
+| `nvme0n1` | NVMe SSD | 256 GB | Active Proxmox install and VM disks | In use |
+| `sda` | SATA SSD | 256 GB | Previous Proxmox install (contents unreviewed) | Not used by the current install; volumes are still active |
+| External drive | HDD, USB | 1 TB (about 85 GB used) | Personal files only | Disconnected until a plan exists |
+
+SMART health: [not checked yet]. Check both internal disks before trusting either with backups (`smartctl -H`, leave serial numbers out of this repo).
+
+## Proxmox storage
+
+Defined in `/etc/pve/storage.cfg`. No external or network storage is configured.
+
+| Storage ID | Type | Backing | Content | Notes |
+| ------------ | ------ | --------- | --------- | ------- |
+| `local` | Directory | `/var/lib/vz` on the root LV (~69 GB) | ISO, templates, backups, import | Same disk as the VMs |
+| `local-lvm` | LVM-thin | Pool `data` in VG `pve` (~141 GB) | VM disks, container volumes | Active VM storage |
+
+### Layout on `nvme0n1` (VG `pve`, ~237 GB)
+
+| Logical volume | Size | Purpose |
+| ---------------- | ------ | --------- |
+| `swap` | 8 GB | Swap |
+| `root` | ~69 GB | Proxmox OS and the `local` directory storage |
+| `data` (thin pool) | ~141 GB | VM disks |
+| (unallocated) | ~16 GB | Free in the volume group |
+
+### Current VM disks
+
+| VMID | Name | Disks | Provisioned |
+| ------ | ------ | ------- | ------------- |
+| 1004 | nexuslab | EFI disk (4 MB) and a 160 GB data disk | 160 GB |
+
+### Thin pool overcommit
+
+VM `1004`'s 160 GB disk is larger than the ~141 GB pool it sits in. Thin provisioning allows this, and the pool was 6.5% used on 2026-11-01. If the guest ever writes more than the pool can hold, the pool fills, and a full thin pool can corrupt every volume in it.
+
+- Check usage regularly: `lvs pve` (watch `Data%` and `Meta%` on `data`).
+- Keep Nexus blob storage within a size that fits the pool, or plan to grow the pool using the ~16 GB free in the VG.
+- Do not create additional large VM disks without recalculating.
+
+## Previous install on `sda`
+
+The SATA SSD holds a second volume group, which Proxmox renamed `pve-OLD-*` because another `pve` group already existed. It is about 237 GB, with a ~141 GB thin pool that was about 53% used on 2026-11-01. It contains 19 logical volumes:
+
+- its own `root` and `swap`
+- two template base volumes and about 14 VM disks, some linked clones of the templates
+- none of these are registered as VMs on the current install
+
+**Decision pending:** keep, copy elsewhere, or wipe. The contents are unknown. Nothing here has a backup, so it may be the only copy of whatever is on it.
+
+### Read-only review (before any wipe)
+
+Run on `pve01`. Replace `<old-vg>` with the real volume group name from `vgs`. Do not write the full name into this repo.
+
+```
+vgs
+lvs <old-vg>
+mkdir -p /mnt/oldroot
+mount -o ro /dev/<old-vg>/root /mnt/oldroot
+ls /mnt/oldroot/etc /mnt/oldroot/root
+umount /mnt/oldroot
+```
+
+Small ext4 VM disks (for example the 2 GB and 8 GB volumes) can be mounted the same way with `-o ro,noload`. Larger ones are probably full VM disks with partition tables; inspect them with `kpartx` or `losetup -P` rather than guessing.
+
+Record what you find in [status.md](../status.md), then decide.
+
+## Backups
+
+**Current state:** no scheduled backups. One manual backup of `1004 nexuslab` was taken on 2026-11-01 to `local`, which is on the same disk as the VM. It protects against a bad change, not against disk failure.
+
+| Item | Status |
+| ------ | -------- |
+| Scheduled backup job | None |
+| Backup destination on a separate disk | Not set up |
+| Offsite or offline copy | None |
+| Last successful restore test | None yet |
+| NAS | Not available (no budget right now) |
+
+### Options without a NAS
+
+Neither option protects against fire, theft, or the whole host dying.
+
+| Option | Protects against | Cost | Notes |
+| -------- | ------------------ | ------ | ------- |
+| `sda` SATA SSD, once cleared | Failure of the NVMe disk | None | Separate hardware, always attached. Needs the old-install decision first. Roughly 237 GB. |
+| 1 TB external drive | NVMe failure, plus offline when unplugged | None | Large and removable, but it also holds personal files. Keep backups on a separate partition or folder. |
+| Both | Either single disk failing, plus a removable second copy | None | Closest to a 2-copy setup without new hardware. |
+
+**Proposed plan (not decided):**
+
+1. Clear or copy off the old install on `sda`, then add it as a Proxmox directory storage for backups.
+2. Schedule a nightly or weekly `vzdump` of `1004` to that storage, with a short retention (for example keep the last 3).
+3. Periodically copy the newest archive to the external drive and disconnect it.
+4. Run a restore test (below) after the first successful backup, then after any major change.
+
+Backup archives (`*.vma.zst` and similar) are blocked by `.gitignore`. Never commit them.
+
+### Manual backup (reference)
+
+```
+df -h /var/lib/vz
+vzdump 1004 --storage <backup-storage> --mode snapshot --compress zstd
+```
+
+Check free space first. The root volume is only about 69 GB.
+
+## Restore test
+
+A backup that has never been restored is untested. Do this after the first backup is on a separate disk.
+
+1. Pick an unused VMID (for example `9001`) so the real VM is untouched.
+2. Restore: `qmrestore <archive> 9001 --storage local-lvm --unique 1`. The `--unique` flag gives the copy a new MAC address.
+3. Before starting it, set the network device to disconnected (VM → Hardware → Network Device → tick Disconnect) so it cannot clash with `1004` on the LAN.
+4. Start the copy. Confirm it boots and Nexus starts.
+5. Shut down and delete the test VM: `qm destroy 9001 --purge`.
+6. Record the date and result in the table below and in [status.md](../status.md).
+
+| Date | Archive | Result | Notes |
+| ------ | --------- | -------- | ------- |
+| [none yet] | | | |
+
+## Open questions
+
+- What is on the old install on `sda`, and can the disk be wiped?
+- Are both internal disks healthy? (SMART not checked.)
+- What is the long-term role of the 1 TB external drive (personal files only, or also a backup copy)?
+- What schedule and retention fit the free space on the backup target?
+
+## Related
+
+- [README.md](../README.md): Storage and Backups, Guest Inventory
+- [status.md](../status.md): checklists, decisions, session notes
