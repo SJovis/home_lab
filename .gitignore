@@ -1,0 +1,16 @@
+# Secrets and keys
+*.env
+*.key
+*.pem
+secrets/
+*.tfvars
+terraform.tfstate*
+
+# Backups and dumps
+*.vma.zst
+*.tar.gz
+*.sql
+*.dump
+
+# Local tooling
+.claude/settings.local.json
