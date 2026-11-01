@@ -54,7 +54,7 @@ The game server (Palworld), Teamspeak and test VMs were deleted on 2026-11-01 to
 ## Storage and Backups
 
 - Active Proxmox install on the NVMe SSD: LVM-thin `local-lvm` (~141 GB pool) for VM disks, and `local` directory storage on the ~69 GB root volume
-- SATA SSD: holds what appears to be a previous Proxmox install (volume group renamed `pve-OLD-*`) with old VMs and templates; contents under review
+- SATA SSD: unused after wiping an old test install on 2026-11-01; planned backup target
 - 1 TB external drive: personal files only, not part of Proxmox storage, currently disconnected
 - Backups: no scheduled backups. One manual backup of `1004 nexuslab` was taken on 2026-11-01 to `local`, which is on the same disk as the VM
 - Last successful restore test: none yet

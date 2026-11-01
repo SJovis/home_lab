@@ -10,7 +10,7 @@
 - Guests (all Ubuntu 26.04.1 LTS):
   - 1004 `nexuslab`: Sonatype Nexus artifact repository (running)
   - Palworld, Teamspeak and test VMs deleted 2026-11-01
-- Storage: NVMe SSD holds the active Proxmox install (LVM-thin `local-lvm` ~141 GB pool, `local` dir on the ~69 GB root LV). SATA SSD holds an old Proxmox install (VG `pve-OLD-*`) with old VMs and templates. The 1 TB external drive is personal files only and disconnected until a plan exists
+- Storage: NVMe SSD holds the active Proxmox install (LVM-thin `local-lvm` ~141 GB pool, `local` dir on the ~69 GB root LV). SATA SSD is empty (old test install wiped 2026-11-01) and is the planned backup target. The 1 TB external drive is personal files only and disconnected until a plan exists
 - Backups: no scheduled backups. One manual backup of 1004 on `local` (same disk as the VM). The external drive holds personal files only. No budget for a NAS right now
 - Known limitation: all devices share one network, so a compromised IoT or mobile device can reach the Proxmox host and guests
 
@@ -29,6 +29,7 @@
 - [x] v0.1 README drafted and updated with current topology and guests
 - [x] README placeholders filled in (hardware, Nexus 3.97.0-13, Ubuntu 26.04.1 LTS guests, Proxmox 9.1.1)
 - [x] 2FA enabled on Proxmox (TOTP plus recovery keys), 2026-11-01
+- [x] T2: Reviewed the old install on the SATA SSD (test leftovers, no backups) and wiped the disk, 2026-11-01
 - [x] T1: SMART check on both internal disks, both PASSED, 2026-11-01 (SATA SSD has 2 reallocated sectors, re-check monthly)
 - [x] Drafted `docs/storage.md` (disks, pools, backup options, restore-test checklist), 2026-11-01
 - [x] Deleted unused VMs 1001, 1002, 1003, 1005; kept 1004 nexuslab (2026-11-01)
@@ -37,8 +38,7 @@
 
 ## In Progress
 
-- [ ] T2: Review the old install on the SATA SSD, then decide keep, copy or wipe
-- [ ] T3: Set up a scheduled backup of `1004 nexuslab` to a separate disk, then run a restore test (needs T1 and T2)
+- [ ] T3: Set up a scheduled backup of `1004 nexuslab` to a separate disk, then run a restore test (T1 and T2 are done)
 - [ ] T4: Confirm Proxmox web UI and SSH are not reachable from outside Tailscale
 
 ## Next
@@ -53,8 +53,7 @@
 
 - Router support for VLANs is unconfirmed. Is a dedicated router (VyOS/OPNsense on a small PC) plus a managed switch worth it for segmentation?
 - Which PoE switch fits the camera plan, and how many ports are needed?
-- What is on the old install on the SATA SSD (`pve-OLD-*`): anything to keep, or can the disk be wiped and reused as a backup target?
-- Which backup target is acceptable without a NAS: the SATA SSD (once cleared), the 1 TB external drive, or both? Neither protects against fire, theft or host loss
+- Which backup target is acceptable without a NAS: the SATA SSD, the 1 TB external drive, or both? Neither protects against fire, theft or host loss
 - Should friends connect via WireGuard instead of port forwarding?
 
 ## Decisions Log
@@ -64,6 +63,7 @@
 - 2026-11-01: No separate 2FA on the Tailscale account. Reason: sign-in is already protected by the identity provider's own 2FA, and only devices in the account can reach the tailnet
 - 2026-11-01: Deleted the test VMs (teamspeak, TS3, ubuntu26.04, palworld) and start the project from zero with only 1004 nexuslab. Reason: they were small tests and case studies of what the machine could host, never meant to be permanent
 - 2026-11-01: Game servers for friends demoted to a low-priority goal, to be planned from the start only if a game changes the plans
+- 2026-11-01: Wiped the old Proxmox install on the SATA SSD after a read-only review. Reason: the old VMs and containers were test leftovers, there were no backups on it, and the disk is wanted as the backup target
 - 2026-11-01: Pre-commit hook lives in tracked `.githooks/` (enabled per clone with `git config core.hooksPath .githooks`) so it is versioned with the repo
 
 ## Session Notes
@@ -78,3 +78,4 @@
 - 2026-11-01: Deleted VMs 1001 teamspeak, 1002 TS3, 1003 ubuntu26.04 and 1005 palworld after a manual backup of 1004. Guest docs now list only 1004 nexuslab. Next: decide what to keep on the old SATA install, then set up a scheduled backup of 1004 to a separate disk.
 - 2026-11-01: Wrote `docs/storage.md` and linked it from the README. It holds the disk layout, thin pool overcommit warning, a read-only review procedure for the old SATA install, and a proposed (undecided) backup plan. Next: review the old SATA install, check SMART on both disks, then pick a backup target.
 - 2026-11-01: T1 done. Both internal disks pass SMART. NVMe at 29% of rated life; SATA SSD shows 2 reallocated sectors, so recheck monthly and do not rely on it alone. Tasks T1 to T4 now tracked under In Progress. Next: T2, review the old SATA install.
+- 2026-11-01: T2 done. Old install on the SATA SSD reviewed read-only (templates, linked clones, containers, no backups), then wiped; verified with lsblk, pvs and vgs. Next: T3, format the SSD and add it as backup storage, schedule a backup of 1004, and run a restore test.

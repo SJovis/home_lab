@@ -10,7 +10,7 @@ This page covers disks, Proxmox storage pools, backup destinations, and restore 
 | Device | Type | Size | Role | State |
 | -------- | ------ | ------ | ------ | ------- |
 | `nvme0n1` | NVMe SSD | 256 GB | Active Proxmox install and VM disks | In use |
-| `sda` | SATA SSD | 256 GB | Previous Proxmox install (contents unreviewed) | Not used by the current install; volumes are still active |
+| `sda` | SATA SSD | 256 GB | Unused. Wiped 2026-11-01; planned backup target | Empty, no partitions |
 | External drive | HDD, USB | 1 TB (about 85 GB used) | Personal files only | Disconnected until a plan exists |
 
 SMART health (checked 2026-11-01, `smartctl`; keep serial numbers out of this repo):
@@ -54,32 +54,15 @@ VM `1004`'s 160 GB disk is larger than the ~141 GB pool it sits in. Thin provisi
 - Keep Nexus blob storage within a size that fits the pool, or plan to grow the pool using the ~16 GB free in the VG.
 - Do not create additional large VM disks without recalculating.
 
-## Previous install on `sda`
+## Former install on `sda`
 
-The SATA SSD holds a second volume group, which Proxmox renamed `pve-OLD-*` because another `pve` group already existed. It is about 237 GB, with a ~141 GB thin pool that was about 53% used on 2026-11-01. It contains 19 logical volumes:
+The SATA SSD held an earlier Proxmox install, which Proxmox had renamed `pve-OLD-*` because another `pve` volume group already existed. It was reviewed read-only on 2026-11-01:
 
-- its own `root` and `swap`
-- two template base volumes and about 14 VM disks, some linked clones of the templates
-- none of these are registered as VMs on the current install
+- two template base volumes and about 14 VM and container disks, mostly linked clones of the templates
+- no backup archives and nothing stored under `/root`
+- all of it was old test and lab leftovers
 
-**Decision pending:** keep, copy elsewhere, or wipe. The contents are unknown. Nothing here has a backup, so it may be the only copy of whatever is on it.
-
-### Read-only review (before any wipe)
-
-Run on `pve01`. Replace `<old-vg>` with the real volume group name from `vgs`. Do not write the full name into this repo.
-
-```
-vgs
-lvs <old-vg>
-mkdir -p /mnt/oldroot
-mount -o ro /dev/<old-vg>/root /mnt/oldroot
-ls /mnt/oldroot/etc /mnt/oldroot/root
-umount /mnt/oldroot
-```
-
-Small ext4 VM disks (for example the 2 GB and 8 GB volumes) can be mounted the same way with `-o ro,noload`. Larger ones are probably full VM disks with partition tables; inspect them with `kpartx` or `losetup -P` rather than guessing.
-
-Record what you find in [status.md](../status.md), then decide.
+**Decision (2026-11-01):** wiped. The volume group and partition table were removed and the SSD was trimmed with `blkdiscard`. Verified afterwards: `lsblk` shows no partitions on `sda`, and `vgs` lists only `pve`.
 
 ## Backups
 
@@ -99,13 +82,13 @@ Neither option protects against fire, theft, or the whole host dying.
 
 | Option | Protects against | Cost | Notes |
 | -------- | ------------------ | ------ | ------- |
-| `sda` SATA SSD, once cleared | Failure of the NVMe disk | None | Separate hardware, always attached. Needs the old-install decision first. Roughly 237 GB. |
+| `sda` SATA SSD (cleared) | Failure of the NVMe disk | None | Separate hardware, always attached. Roughly 237 GB. Has 2 reallocated sectors, so do not make it the only copy. |
 | 1 TB external drive | NVMe failure, plus offline when unplugged | None | Large and removable, but it also holds personal files. Keep backups on a separate partition or folder. |
 | Both | Either single disk failing, plus a removable second copy | None | Closest to a 2-copy setup without new hardware. |
 
 **Proposed plan (not decided):**
 
-1. Clear or copy off the old install on `sda`, then add it as a Proxmox directory storage for backups.
+1. Partition and format `sda`, then add it as a Proxmox directory storage for backups.
 2. Schedule a nightly or weekly `vzdump` of `1004` to that storage, with a short retention (for example keep the last 3).
 3. Periodically copy the newest archive to the external drive and disconnect it.
 4. Run a restore test (below) after the first successful backup, then after any major change.
@@ -138,7 +121,6 @@ A backup that has never been restored is untested. Do this after the first backu
 
 ## Open questions
 
-- What is on the old install on `sda`, and can the disk be wiped?
 - Does `sda`'s reallocated sector count (2 on 2026-11-01) stay stable?
 - What is the long-term role of the 1 TB external drive (personal files only, or also a backup copy)?
 - What schedule and retention fit the free space on the backup target?
