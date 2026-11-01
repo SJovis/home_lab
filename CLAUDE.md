@@ -18,7 +18,7 @@ Facts are duplicated across `README.md` and `status.md` (guest inventory, networ
 
 ## Conventions
 
-- The repo is public. Never commit real public IPs, credentials, hostnames beyond what's already documented, or host-specific secrets. Network addresses such as `192.168.1.0/24` are explicit placeholders. `.gitignore` already blocks env/key/pem files, `secrets/`, Terraform state/tfvars, and Proxmox backup dumps (`*.vma.zst`, etc.). Pre-commit secret scanning with gitleaks is planned but not set up.
+- The repo is public. Never commit real public IPs, credentials, hostnames beyond what's already documented, or host-specific secrets. Network addresses such as `192.168.1.0/24` are explicit placeholders. `.gitignore` already blocks env/key/pem files, `secrets/`, Terraform state/tfvars, and Proxmox backup dumps (`*.vma.zst`, etc.). Pre-commit secret scanning runs gitleaks via the tracked `.githooks/pre-commit`; after cloning, enable it with `git config core.hooksPath .githooks` (requires `gitleaks` in PATH).
 - Strip secrets and identifying details from any config before it goes into `configs/`.
 - Use absolute dates (YYYY-MM-DD) in the Decisions Log and Session Notes.
 - Guests are identified by Proxmox VMID plus name (e.g. `100 nexus`); keep that format in the inventory tables.

@@ -1,6 +1,6 @@
 # Status
 
-**Last updated:** 2026-10-31
+**Last updated:** 2026-11-01
 **Current version:** v0.1 (baseline)
 
 ## Environment
@@ -27,13 +27,13 @@
 - [x] Sonatype Nexus running in a VM
 - [x] Game server and Teamspeak VMs created
 - [x] v0.1 README drafted and updated with current topology and guests
+- [x] Pre-commit secret scanning (gitleaks) via tracked `.githooks/pre-commit`
 
 ## In Progress
 
 - [ ] Fill in README placeholders: EliteDesk CPU/RAM/storage, Nexus version, guest OS
 - [ ] Confirm Proxmox web UI and SSH are not reachable from outside the network
 - [ ] Enable 2FA on Proxmox admin accounts
-- [ ] Set up pre-commit secret scanning (gitleaks)
 
 ## Next
 
@@ -53,7 +53,9 @@
 
 - 2026-10-31: Chose flat network for v0.1 baseline; segmentation deferred to v0.2
 - 2026-10-31: Public repo with sanitized configs; secrets kept out of git
+- 2026-11-01: Pre-commit hook lives in tracked `.githooks/` (enabled per clone with `git config core.hooksPath .githooks`) so it is versioned with the repo
 
 ## Session Notes
 
 - 2026-10-31: README updated. Goals revised. Next: fill in hardware specs and plan the VLAN layout.
+- 2026-11-01: Added gitleaks pre-commit hook (`.githooks/pre-commit`, scans staged changes). Verified it blocks a fake token and allows clean commits. CLAUDE.md was already committed.

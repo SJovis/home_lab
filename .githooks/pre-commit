@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Scan staged changes for secrets with gitleaks before every commit.
+# Enable once per clone with: git config core.hooksPath .githooks
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found in PATH; install it (https://github.com/gitleaks/gitleaks) or commit with --no-verify at your own risk." >&2
+  exit 1
+fi
+
+exec gitleaks git --pre-commit --staged --redact --no-banner
