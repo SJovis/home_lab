@@ -13,4 +13,4 @@ terraform.tfstate*
 *.dump
 
 # Local tooling
-.claude/settings.local.json
+.claude/

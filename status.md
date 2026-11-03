@@ -1,12 +1,12 @@
 # Status
 
-**Last updated:** 2026-11-01
+**Last updated:** 2026-11-03
 **Current version:** v0.1 (baseline)
 
 ## Environment
 
 - Host: HP EliteDesk running Proxmox VE 9.1.1 (hostname: pve01)
-- Network: single flat network behind ISP router (192.168.1.0/24 placeholder), wired and Wi-Fi clients
+- Network: single flat network behind ISP router (192.168.1.0/24 placeholder), wired and Wi-Fi clients. Router and TV box (Wi-Fi) on the 1st floor; switch, `pve01` and workstation on the 2nd floor; ground floor empty. Layout in `docs/network.md`
 - Guests (all Ubuntu 26.04.1 LTS):
   - 1004 `nexuslab`: Sonatype Nexus artifact repository (running)
   - Palworld, Teamspeak and test VMs deleted 2026-11-01
@@ -19,6 +19,7 @@
 - Run a reliable home environment, rebuilt from scratch with better planning
 - Game servers for friends: low priority, revisit only if a game comes up that changes the plans
 - Practice DevOps and systems administration on real infrastructure
+- Run a surveillance system for two PoE cameras in a VM on the Proxmox host (planned)
 - Document design decisions, mistakes, and changes over time
 
 ## Done
@@ -45,14 +46,16 @@
 
 - [ ] Watch thin pool headroom on `local-lvm`: pool is 6.5% used, but VM 1004's 160 GB disk is larger than the ~141 GB pool
 - [ ] Plan VLAN segmentation (management, guest, IoT) and pick VLAN IDs and subnets
-- [ ] Plan security camera setup: PoE switch connected to the router
-- [ ] Write `docs/network.md` with the current and target topology
+- [ ] Plan security camera setup: two PoE cameras on a new PoE switch connected to the router, surveillance system in a VM on `pve01` (pick switch, cameras, software and recording storage)
+- [ ] Finish `docs/network.md`: first draft written 2026-11-03, VLAN IDs and subnets still `[TBD]`
 - [ ] Start `lessons-learned.md` with the first real issue encountered
 
 ## Open Questions
 
 - Router support for VLANs is unconfirmed. Is a dedicated router (VyOS/OPNsense on a small PC) plus a managed switch worth it for segmentation?
-- Which PoE switch fits the camera plan, and how many ports are needed?
+- Which PoE switch fits the camera plan, and how many ports are needed? Managed, if the cameras go in their own VLAN
+- Where will the surveillance VM store recordings? `local-lvm` is overcommitted and `sda` is the planned backup target
+- Which surveillance software will run in the VM, and does the i5-6500T (4 cores, 15.5 GiB shared with Nexus) have room for it?
 - Which backup target is acceptable without a NAS: the SATA SSD, the 1 TB external drive, or both? Neither protects against fire, theft or host loss
 - Should friends connect via WireGuard instead of port forwarding?
 
@@ -64,6 +67,8 @@
 - 2026-11-01: Deleted the test VMs (teamspeak, TS3, ubuntu26.04, palworld) and start the project from zero with only 1004 nexuslab. Reason: they were small tests and case studies of what the machine could host, never meant to be permanent
 - 2026-11-01: Game servers for friends demoted to a low-priority goal, to be planned from the start only if a game changes the plans
 - 2026-11-01: Wiped the old Proxmox install on the SATA SSD after a read-only review. Reason: the old VMs and containers were test leftovers, there were no backups on it, and the disk is wanted as the backup target
+- 2026-11-03: Documented the floor-by-floor layout (router and Wi-Fi TV box on the 1st floor; switch, `pve01` and workstation on the 2nd floor). The drawing itself is not stored in the repo
+- 2026-11-03: Planned a surveillance system: two PoE cameras on a new PoE switch connected to the router, software in a VM on `pve01`. Recommended a camera VLAN with no internet access and remote viewing only via Tailscale or WireGuard, never port forwarding
 - 2026-11-01: Pre-commit hook lives in tracked `.githooks/` (enabled per clone with `git config core.hooksPath .githooks`) so it is versioned with the repo
 
 ## Session Notes
@@ -78,4 +83,5 @@
 - 2026-11-01: Deleted VMs 1001 teamspeak, 1002 TS3, 1003 ubuntu26.04 and 1005 palworld after a manual backup of 1004. Guest docs now list only 1004 nexuslab. Next: decide what to keep on the old SATA install, then set up a scheduled backup of 1004 to a separate disk.
 - 2026-11-01: Wrote `docs/storage.md` and linked it from the README. It holds the disk layout, thin pool overcommit warning, a read-only review procedure for the old SATA install, and a proposed (undecided) backup plan. Next: review the old SATA install, check SMART on both disks, then pick a backup target.
 - 2026-11-01: T1 done. Both internal disks pass SMART. NVMe at 29% of rated life; SATA SSD shows 2 reallocated sectors, so recheck monthly and do not rely on it alone. Tasks T1 to T4 now tracked under In Progress. Next: T2, review the old SATA install.
+- 2026-11-03: Added the network diagram details to the docs. New `docs/network.md` (layout by floor, current topology, camera target, VLAN plan with placeholders). README topology, hardware table, goals and roadmap updated, plus an open question in `docs/storage.md` about recording storage. TV box confirmed as Wi-Fi. Flagged: cameras on the flat network, and recording storage competing with the backup target. Next: T3 backup and restore test, then T4.
 - 2026-11-01: T2 done. Old install on the SATA SSD reviewed read-only (templates, linked clones, containers, no backups), then wiped; verified with lsblk, pvs and vgs. Next: T3, format the SSD and add it as backup storage, schedule a backup of 1004, and run a restore test.

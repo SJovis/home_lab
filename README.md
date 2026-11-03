@@ -9,20 +9,23 @@ A home infrastructure lab built on Proxmox VE, used to host game servers for fri
 - Run a reliable home environment, rebuilt from scratch with better planning
 - Game servers for friends: low priority, revisit only if a game comes up that changes the plans
 - Practice DevOps and systems administration on real infrastructure
+- Run a surveillance system for two PoE cameras in a VM on the Proxmox host (planned)
 - Document design decisions, mistakes, and changes over time
 
 ## Current Topology
 
 Internet (fibre)
 │
-[ISP router] ── NAT, DHCP, Wi-Fi (single flat network: 192.168.1.0/24 placeholder)
+[ISP router, 1st floor] ── NAT, DHCP, Wi-Fi (single flat network: 192.168.1.0/24 placeholder)
 │
 [Switch, 2nd floor]
 ├── Gaming / work PC (192.168.1.x)
 └── HP EliteDesk (192.168.1.10) Proxmox VE host
 └── Sonatype Nexus VM
 
-Wi-Fi clients: smartphone, smart TV
+Wi-Fi clients: smartphone, TV box (1st floor, feeds the TV)
+
+The ground floor (R/C) has no lab equipment yet. A floor-by-floor layout and the planned camera extension are in [docs/network.md](docs/network.md).
 
 **Known limitations:** all devices share one network. A compromised IoT or mobile device could reach the Proxmox host and guest VMs directly. Segmentation is planned.
 
@@ -30,10 +33,12 @@ Wi-Fi clients: smartphone, smart TV
 
 | Device | Role | Notes |
 | -------- | ------ | ------- |
-| ISP router | Gateway, Wi-Fi | Provided by ISP |
+| ISP router | Gateway, Wi-Fi | Provided by ISP, 1st floor |
 | HP EliteDesk | Proxmox VE host | Intel Core i5-6500T (4 cores), 15.5 GiB RAM, 2 x 256 GB SSD (NVMe + SATA); 1 TB external drive for personal files, currently disconnected |
 | Gaming / work PC | Workstation | Not part of the lab |
-| Switch | Wired LAN | Unmanaged, 2nd floor |
+| Switch | Wired LAN | Unmanaged, 2nd floor, uplink to the router |
+| PoE switch (planned) | Powers and connects the cameras | Not purchased, model `[TBD]`, connects to the router |
+| 2 x PoE cameras (planned) | Surveillance | Not purchased, models `[TBD]` |
 
 ## Software
 
@@ -76,7 +81,7 @@ Details, the backup plan and the restore-test checklist are in [docs/storage.md]
 ## Roadmap
 
 - [ ] Split network into management, guest, and IoT VLANs
-- [ ] Add a security cameras setup to the network. Plan is to have them connected to a PoE Switch that connects to the Router.
+- [ ] Add a security camera setup: two PoE cameras on a new PoE switch connected to the router, with the surveillance system running in a VM on `pve01`. Open points (recording storage, VLAN isolation, remote viewing) are in [docs/network.md](docs/network.md)
 
 ## Repository Layout
 

@@ -124,6 +124,7 @@ A backup that has never been restored is untested. Do this after the first backu
 - Does `sda`'s reallocated sector count (2 on 2026-11-01) stay stable?
 - What is the long-term role of the 1 TB external drive (personal files only, or also a backup copy)?
 - What schedule and retention fit the free space on the backup target?
+- Where will the planned surveillance VM store recordings? `local-lvm` is overcommitted and `sda` is earmarked for backups, so this needs its own disk or a decision on sharing. See [network.md](network.md).
 
 ## Related
 
